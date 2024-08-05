@@ -3,7 +3,7 @@ import axios from "axios";
 const API_KEY = "3be46b55adf54a199bf6182591e1b56d";
 const BASE_URL = "https://newsapi.org/v2";
 
-interface Article {
+export interface Article {
     title: string;
     description: string;
     url: string;
