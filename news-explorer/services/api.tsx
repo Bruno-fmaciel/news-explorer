@@ -26,8 +26,22 @@ export const fetchTopHeadlines = async (): Promise<NewsResponse> => {
         });
         return response.data;
     } catch (error) {
-        console.error("Erro ao buscar notícias: ", error);
+        console.error("Erro ao buscar manchetes: ", error);
         throw error;
     }
 };
 
+export const searchNews = async (query: string): Promise<NewsResponse> => {
+    try {
+        const response = await axios.get("${BASE_URL}/everything", {
+            params: {
+                q: query,
+                apiKey: API_KEY,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao buscar as notícias: ", error);
+        throw error;
+    }
+}
