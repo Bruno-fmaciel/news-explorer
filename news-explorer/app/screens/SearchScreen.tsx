@@ -47,3 +47,34 @@ const SearchScreen: React.FC = () => {
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex:1,
+        padding: 16,
+    },
+    input: {
+        height: 40,
+        borderColor: "gray",
+        borderWidth: 1,
+        marginBottom: 16,
+        paddingHorizontal: 8,
+    }, 
+    card: {
+        marginBottom: 16,
+        padding: 16,
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    title: {
+        fontWeight: "bold",
+        fontSize: 16,
+    },
+});
+
+export default SearchScreen;
