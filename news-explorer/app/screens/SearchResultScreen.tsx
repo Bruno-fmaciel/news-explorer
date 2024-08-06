@@ -1,8 +1,7 @@
 import React, { useEffect, useState} from "react";
-import { View, FlatList, ActivityIndicator, StyleSheet, Button } from "react-native";
+import { View, FlatList, ActivityIndicator, StyleSheet, Button, Linking } from "react-native";
 import { searchNews, Article } from "../services/api";
 import { ThemedText } from "@/components/ThemedText";
-import { useRouter } from "expo-router";
 
 interface SearchResultScreenProps {
     route: {
@@ -16,7 +15,6 @@ const SearchResultScreen: React.FC<SearchResultScreenProps> = ({ route }) => {
     const [results, setResults] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
     const { query } = route.params;
-    const router = useRouter();
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -49,11 +47,33 @@ const SearchResultScreen: React.FC<SearchResultScreenProps> = ({ route }) => {
                         <ThemedText>{item.description}</ThemedText>
                         <Button
                             title="Open"
-                            onPress={() => router.push({ pathname: item.url })}
+                            onPress={() => Linking.openURL(item.url)}
                         />
                     </View>
                 )}
             />
         </View>
     );
-}
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 16,
+    },
+    card: {
+        marginBottom: 16,
+        padding: 16,
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    title: {
+        fontWeight: "bold",
+        fontSize: 16,
+    },
+});
