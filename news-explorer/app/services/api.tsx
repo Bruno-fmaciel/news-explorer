@@ -18,9 +18,9 @@ interface NewsResponse {
 
 export const fetchTopHeadlines = async (): Promise<NewsResponse> => {
     try {
-        const response = await axios.get("${BASE_URL}/top-headlines", {
+        const response = await axios.get(`${BASE_URL}/top-headlines`, {
             params: {
-                country: "br",
+                country: "us",
                 apiKey: API_KEY,
             },
         });
@@ -33,7 +33,7 @@ export const fetchTopHeadlines = async (): Promise<NewsResponse> => {
 
 export const searchNews = async (query: string): Promise<NewsResponse> => {
     try {
-        const response = await axios.get("${BASE_URL}/everything", {
+        const response = await axios.get(`${BASE_URL}/top-headlines`, {
             params: {
                 q: query,
                 apiKey: API_KEY,

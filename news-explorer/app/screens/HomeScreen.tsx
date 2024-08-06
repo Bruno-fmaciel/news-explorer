@@ -33,7 +33,7 @@ const HomeScreen: React.FC = () => {
                 keyExtractor={(item) => item.url} 
                 renderItem={({ item }) => (
                     <View style={styles.card}>
-                        <ThemedText style={styles.title}></ThemedText>
+                        <ThemedText style={styles.title}>{item.title}</ThemedText>
                         <ThemedText>{item.source.name}</ThemedText>
                         <ThemedText>{item.description}</ThemedText>
                     </View>
