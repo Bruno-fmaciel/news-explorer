@@ -1,37 +1,38 @@
-// app/screens/SearchScreen.tsx
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, FlatList, ActivityIndicator, StyleSheet, Linking } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, TextInput, FlatList, ActivityIndicator, StyleSheet, Button, Linking } from 'react-native';
 import { searchNews, Article } from '../services/api';
 import { ThemedText } from '@/components/ThemedText';
+import debounce from 'lodash/debounce';
 
 const SearchScreen: React.FC = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const handleSearch = async () => {
-        if (query) {
-            setLoading(true);
-            try {
-                const data = await searchNews(query);
-                setResults(data.articles);
-            } catch (error) {
-                console.error("Erro ao buscar notícias: ", error);
-            } finally {
-                setLoading(false);
+    // Função de busca com debounce
+    const fetchResults = useCallback(
+        debounce(async (query: string) => {
+            if (query) {
+                setLoading(true);
+                try {
+                    const data = await searchNews(query);
+                    setResults(data.articles);
+                } catch (error) {
+                    console.error("Erro ao buscar notícias: ", error);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setResults([]);
             }
-        }
-    };
+        }, 500), // 500 ms de atraso
+        []
+    );
 
+    // Atualiza os resultados de busca quando a query muda
     useEffect(() => {
-        if (query) {
-            handleSearch();
-        }
-    }, [query]);
-
-    if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }
+        fetchResults(query);
+    }, [query, fetchResults]);
 
     return (
         <View style={styles.container}>
@@ -41,7 +42,7 @@ const SearchScreen: React.FC = () => {
                 value={query}
                 onChangeText={setQuery}
             />
-            <Button title="Buscar" onPress={handleSearch} />
+            {loading && <ActivityIndicator size="large" color="#0000ff" />}
             {results.length > 0 && (
                 <FlatList
                     data={results}
