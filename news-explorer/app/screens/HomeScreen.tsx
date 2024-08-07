@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet} from "react-native";
+import { View, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { fetchTopHeadlines, Article } from '../services/api';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -8,7 +8,7 @@ const HomeScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const getHeadLines = async () => {
+        const getHeadlines = async () => {
             try {
                 const data = await fetchTopHeadlines();
                 setHeadlines(data.articles);
@@ -19,8 +19,12 @@ const HomeScreen: React.FC = () => {
             }
         };
 
-        getHeadLines();
+        getHeadlines();
     }, []);
+
+    const handleOpenLink = (url: string) => {
+        Linking.openURL(url);
+    };
 
     if (loading) {
         return <ActivityIndicator size="large" color="#0000ff" />;
@@ -30,12 +34,15 @@ const HomeScreen: React.FC = () => {
         <View style={styles.container}>
             <FlatList
                 data={headlines}
-                keyExtractor={(item) => item.url} 
+                keyExtractor={(item) => item.url}
                 renderItem={({ item }) => (
                     <View style={styles.card}>
                         <ThemedText style={styles.title}>{item.title}</ThemedText>
                         <ThemedText>{item.source.name}</ThemedText>
                         <ThemedText>{item.description}</ThemedText>
+                        <TouchableOpacity onPress={() => handleOpenLink(item.url)} style={styles.button}>
+                            <ThemedText style={styles.buttonText}>Abrir Notícia</ThemedText>
+                        </TouchableOpacity>
                     </View>
                 )}
             />
@@ -51,17 +58,28 @@ const styles = StyleSheet.create({
     card: {
         marginBottom: 16,
         padding: 16,
-        backgroundColor: "#fff",
+        backgroundColor: '#fff',
         borderRadius: 8,
-        shadowColor: "#000",
-        shadowOffset: { width:0, height: 2 },
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
     },
     title: {
-        fontWeight: "bold",
-        fontSize:16,
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    button: {
+        marginTop: 8,
+        padding: 10,
+        backgroundColor: '#007BFF',
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: 16,
     },
 });
 
