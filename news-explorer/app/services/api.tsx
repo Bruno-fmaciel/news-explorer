@@ -20,7 +20,7 @@ export const fetchTopHeadlines = async (): Promise<NewsResponse> => {
     try {
         const response = await axios.get(`${BASE_URL}/top-headlines`, {
             params: {
-                country: "us",
+                country: "br",
                 apiKey: API_KEY,
             },
         });
@@ -37,6 +37,7 @@ export const searchNews = async (query: string): Promise<NewsResponse> => {
             params: {
                 q: query,
                 apiKey: API_KEY,
+                country: "br",
             },
         });
         return response.data;

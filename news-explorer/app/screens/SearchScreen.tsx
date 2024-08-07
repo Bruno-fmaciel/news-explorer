@@ -10,40 +10,45 @@ const SearchScreen: React.FC = () => {
     const [results, setResults] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
-    const [showHistory, setShowHistory] = useState(false);
+    const [showHistory, setShowHistory] = useState(false); // Estado para controlar a exibição do histórico
 
-    const fetchResults = async (searchQuery: string) => {
-        if (searchQuery.trim() === "") {
-            setResults([]);
-            return; 
-        }
-        setLoading(true);     
-        try {
-            const data = await searchNews(searchQuery);
-            setResults(data.articles);
-            await saveSearchHistory(searchQuery);
-            setHistory(await getSearchHistory());
-        } catch (error) {
-            console.error("Erro ao buscar notícias: ", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSearch = () => {
-        fetchResults(query);
-    };
+    const fetchResults = useCallback(
+        debounce(async (searchQuery: string) => {
+            if (searchQuery.trim() === "") {
+                setResults([]);
+                return; 
+            } 
+            setLoading(true);     
+            try {
+                const data = await searchNews(searchQuery);
+                setResults(data.articles);
+                await saveSearchHistory(searchQuery);
+                setHistory(await getSearchHistory());
+            } catch (error) {
+                console.error("Erro ao buscar notícias: ", error);
+            } finally {
+                setLoading(false);
+            }
+        }, 300),
+        []
+    );
 
     const handleHistoryPress = async (query: string) => {
         setQuery(query);
         fetchResults(query);
     };
 
-    const handleChange = (text: string) => {
-        setQuery(text);
+    const handleSearch = () => {
+        fetchResults(query);
     };
 
-    const handleToggleHistory = async () => {
+    const handleChange = (text: string) => {
+        setQuery(text);
+        // Remova o debounce para realizar a busca ao clicar no botão
+        fetchResults.cancel();
+    };
+
+    const toggleHistory = async () => {
         if (!showHistory) {
             const savedHistory = await getSearchHistory();
             setHistory(savedHistory);
@@ -67,28 +72,22 @@ const SearchScreen: React.FC = () => {
                 value={query}
                 onChangeText={handleChange}
             />
-            <Button
-                title="Buscar"
-                onPress={handleSearch}
-            />
-            <Button
-                title={showHistory ? "Ocultar Histórico" : "Mostrar Histórico"}
-                onPress={handleToggleHistory}
-            />
+            <Button title="Buscar" onPress={handleSearch} />
+            <Button title={showHistory ? "Ocultar Histórico" : "Mostrar Histórico"} onPress={toggleHistory} />
             {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
             ) : (
                 <>
                     <FlatList
                         data={results}
-                        keyExtractor={(item) => item.url} // Verifique se item.url é único
+                        keyExtractor={(item) => item.url}
                         renderItem={({ item }) => (
                             <View style={styles.card}>
                                 <ThemedText style={styles.title}>{item.title}</ThemedText>
                                 <ThemedText>{item.source.name}</ThemedText>
                                 <ThemedText>{item.description}</ThemedText>
                                 <Button
-                                    title="Abrir"
+                                    title="Open"
                                     onPress={() => Linking.openURL(item.url)}
                                 />
                             </View>
@@ -97,7 +96,7 @@ const SearchScreen: React.FC = () => {
                     {showHistory && (
                         <FlatList
                             data={history}
-                            keyExtractor={(item) => item} // Verifique se item é único
+                            keyExtractor={(item) => item}
                             renderItem={({ item }) => (
                                 <TouchableOpacity onPress={() => handleHistoryPress(item)}>
                                     <View style={styles.historyItem}>
