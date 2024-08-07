@@ -3,7 +3,11 @@ import { View, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Linkin
 import { fetchTopHeadlines, Article } from '../services/api';
 import { ThemedText } from '@/components/ThemedText';
 
-const HomeScreen: React.FC = () => {
+interface HomeScreenProps {
+    onNavigateToSearch: () => void;
+}
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSearch }) => {
     const [headlines, setHeadlines] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -26,26 +30,32 @@ const HomeScreen: React.FC = () => {
         Linking.openURL(url);
     };
 
-    if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-
     return (
         <View style={styles.container}>
-            <FlatList
-                data={headlines}
-                keyExtractor={(item) => item.url}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <ThemedText style={styles.title}>{item.title}</ThemedText>
-                        <ThemedText>{item.source.name}</ThemedText>
-                        <ThemedText>{item.description}</ThemedText>
-                        <TouchableOpacity onPress={() => handleOpenLink(item.url)} style={styles.button}>
-                            <ThemedText style={styles.buttonText}>Abrir Notícia</ThemedText>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            />
+            <TouchableOpacity 
+                style={styles.searchButton} 
+                onPress={onNavigateToSearch} // Chama a função para exibir SearchScreen
+            >
+                <ThemedText style={styles.searchButtonText}>Ir para Busca</ThemedText>
+            </TouchableOpacity>
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                <FlatList
+                    data={headlines}
+                    keyExtractor={(item) => item.url}
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
+                            <ThemedText style={styles.title}>{item.title}</ThemedText>
+                            <ThemedText>{item.source.name}</ThemedText>
+                            <ThemedText>{item.description}</ThemedText>
+                            <TouchableOpacity onPress={() => handleOpenLink(item.url)} style={styles.button}>
+                                <ThemedText style={styles.buttonText}>Abrir Notícia</ThemedText>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                />
+            )}
         </View>
     );
 };
@@ -77,6 +87,17 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     buttonText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: 16,
+    },
+    searchButton: {
+        marginBottom: 16,
+        padding: 10,
+        backgroundColor: '#28a745',
+        borderRadius: 5,
+    },
+    searchButtonText: {
         color: '#fff',
         textAlign: 'center',
         fontSize: 16,

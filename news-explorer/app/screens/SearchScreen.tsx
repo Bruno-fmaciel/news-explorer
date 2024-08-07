@@ -5,12 +5,16 @@ import { ThemedText } from '@/components/ThemedText';
 import debounce from 'lodash/debounce';
 import { saveSearchHistory, getSearchHistory } from '../services/storage';
 
-const SearchScreen: React.FC = () => {
+interface SearchScreenProps {
+    onBack: () => void;
+}
+
+const SearchScreen: React.FC<SearchScreenProps> = ({ onBack }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
-    const [showHistory, setShowHistory] = useState(false); // Estado para controlar a exibição do histórico
+    const [showHistory, setShowHistory] = useState(false);
 
     const fetchResults = useCallback(
         debounce(async (searchQuery: string) => {
@@ -44,7 +48,6 @@ const SearchScreen: React.FC = () => {
 
     const handleChange = (text: string) => {
         setQuery(text);
-        // Remova o debounce para realizar a busca ao clicar no botão
         fetchResults.cancel();
     };
 
@@ -66,6 +69,7 @@ const SearchScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
+            <Button title="Voltar" onPress={onBack} />
             <TextInput
                 style={styles.input}
                 placeholder="Digite sua busca..."
@@ -87,7 +91,7 @@ const SearchScreen: React.FC = () => {
                                 <ThemedText>{item.source.name}</ThemedText>
                                 <ThemedText>{item.description}</ThemedText>
                                 <Button
-                                    title="Open"
+                                    title="Abrir"
                                     onPress={() => Linking.openURL(item.url)}
                                 />
                             </View>
