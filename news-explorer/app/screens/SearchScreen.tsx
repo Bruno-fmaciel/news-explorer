@@ -1,38 +1,63 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, TextInput, FlatList, ActivityIndicator, StyleSheet, Button, Linking } from 'react-native';
+import { View, TextInput, FlatList, ActivityIndicator, StyleSheet, Button, Linking, TouchableOpacity } from 'react-native';
 import { searchNews, Article } from '../services/api';
 import { ThemedText } from '@/components/ThemedText';
 import debounce from 'lodash/debounce';
+import { saveSearchHistory, getSearchHistory } from '../services/storage';
 
 const SearchScreen: React.FC = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
+    const [history, setHistory] = useState<string[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
 
-    // Função de busca com debounce
-    const fetchResults = useCallback(
-        debounce(async (query: string) => {
-            if (query) {
-                setLoading(true);
-                try {
-                    const data = await searchNews(query);
-                    setResults(data.articles);
-                } catch (error) {
-                    console.error("Erro ao buscar notícias: ", error);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setResults([]);
-            }
-        }, 500), // 500 ms de atraso
-        []
-    );
+    const fetchResults = async (searchQuery: string) => {
+        if (searchQuery.trim() === "") {
+            setResults([]);
+            return; 
+        }
+        setLoading(true);     
+        try {
+            const data = await searchNews(searchQuery);
+            setResults(data.articles);
+            await saveSearchHistory(searchQuery);
+            setHistory(await getSearchHistory());
+        } catch (error) {
+            console.error("Erro ao buscar notícias: ", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    // Atualiza os resultados de busca quando a query muda
-    useEffect(() => {
+    const handleSearch = () => {
         fetchResults(query);
-    }, [query, fetchResults]);
+    };
+
+    const handleHistoryPress = async (query: string) => {
+        setQuery(query);
+        fetchResults(query);
+    };
+
+    const handleChange = (text: string) => {
+        setQuery(text);
+    };
+
+    const handleToggleHistory = async () => {
+        if (!showHistory) {
+            const savedHistory = await getSearchHistory();
+            setHistory(savedHistory);
+        }
+        setShowHistory(!showHistory);
+    };
+
+    useEffect(() => {
+        const loadHistory = async () => {
+            const savedHistory = await getSearchHistory();
+            setHistory(savedHistory);
+        };
+        loadHistory();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -40,25 +65,50 @@ const SearchScreen: React.FC = () => {
                 style={styles.input}
                 placeholder="Digite sua busca..."
                 value={query}
-                onChangeText={setQuery}
+                onChangeText={handleChange}
             />
-            {loading && <ActivityIndicator size="large" color="#0000ff" />}
-            {results.length > 0 && (
-                <FlatList
-                    data={results}
-                    keyExtractor={(item) => item.url}
-                    renderItem={({ item }) => (
-                        <View style={styles.card}>
-                            <ThemedText style={styles.title}>{item.title}</ThemedText>
-                            <ThemedText>{item.source.name}</ThemedText>
-                            <ThemedText>{item.description}</ThemedText>
-                            <Button
-                                title="Open"
-                                onPress={() => Linking.openURL(item.url)}
-                            />
-                        </View>
+            <Button
+                title="Buscar"
+                onPress={handleSearch}
+            />
+            <Button
+                title={showHistory ? "Ocultar Histórico" : "Mostrar Histórico"}
+                onPress={handleToggleHistory}
+            />
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                <>
+                    <FlatList
+                        data={results}
+                        keyExtractor={(item) => item.url} // Verifique se item.url é único
+                        renderItem={({ item }) => (
+                            <View style={styles.card}>
+                                <ThemedText style={styles.title}>{item.title}</ThemedText>
+                                <ThemedText>{item.source.name}</ThemedText>
+                                <ThemedText>{item.description}</ThemedText>
+                                <Button
+                                    title="Abrir"
+                                    onPress={() => Linking.openURL(item.url)}
+                                />
+                            </View>
+                        )}
+                    />
+                    {showHistory && (
+                        <FlatList
+                            data={history}
+                            keyExtractor={(item) => item} // Verifique se item é único
+                            renderItem={({ item }) => (
+                                <TouchableOpacity onPress={() => handleHistoryPress(item)}>
+                                    <View style={styles.historyItem}>
+                                        <ThemedText>{item}</ThemedText>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            ListHeaderComponent={<ThemedText style={styles.header}>Histórico de Buscas</ThemedText>}
+                        />
                     )}
-                />
+                </>
             )}
         </View>
     );
@@ -71,7 +121,7 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 40,
-        borderColor: '#ccc',
+        borderColor: 'gray',
         borderWidth: 1,
         marginBottom: 16,
         paddingHorizontal: 8,
@@ -79,17 +129,28 @@ const styles = StyleSheet.create({
     card: {
         marginBottom: 16,
         padding: 16,
-        backgroundColor: "#fff",
+        backgroundColor: '#fff',
         borderRadius: 8,
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
     },
     title: {
-        fontWeight: "bold",
+        fontWeight: 'bold',
         fontSize: 16,
+    },
+    historyItem: {
+        padding: 16,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    header: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        marginBottom: 8,
     },
 });
 
