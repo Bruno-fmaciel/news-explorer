@@ -69,17 +69,19 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onBack }) => {
 
     return (
         <View style={styles.container}>
-            <Button title="Voltar" onPress={onBack} />
+            <Button title="Home" onPress={onBack} color="#9f0000" />
             <TextInput
                 style={styles.input}
                 placeholder="Digite sua busca..."
                 value={query}
                 onChangeText={handleChange}
             />
-            <Button title="Buscar" onPress={handleSearch} />
-            <Button title={showHistory ? "Ocultar Histórico" : "Mostrar Histórico"} onPress={toggleHistory} />
+            <View style={styles.buttonContainer}>
+                <Button title="Buscar" onPress={handleSearch} color="#9f0000" />
+                <Button title={showHistory ? "Ocultar Histórico" : "Mostrar Histórico"} onPress={toggleHistory} color="#9f0000" />
+            </View>
             {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color="#9f0000" />
             ) : (
                 <>
                     <FlatList
@@ -88,11 +90,12 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onBack }) => {
                         renderItem={({ item }) => (
                             <View style={styles.card}>
                                 <ThemedText style={styles.title}>{item.title}</ThemedText>
-                                <ThemedText>{item.source.name}</ThemedText>
-                                <ThemedText>{item.description}</ThemedText>
+                                <ThemedText style={styles.source}>{item.source.name}</ThemedText>
+                                <ThemedText style={styles.description}>{item.description}</ThemedText>
                                 <Button
                                     title="Abrir"
                                     onPress={() => Linking.openURL(item.url)}
+                                    color="#9f0000"
                                 />
                             </View>
                         )}
@@ -118,41 +121,59 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onBack }) => {
 };
 
 const styles = StyleSheet.create({
+    input: {
+        height: 40,
+        borderColor: '#CCCCCC',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginBottom: 16,
+        paddingHorizontal: 12,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
     container: {
         flex: 1,
         padding: 16,
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 16,
-        paddingHorizontal: 8,
-    },
+        backgroundColor: '#FFFFFF',
+      },
     card: {
         marginBottom: 16,
-        padding: 16,
-        backgroundColor: '#fff',
+        padding: 12,
+        backgroundColor: '#FFFFFF',
         borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowRadius: 8,
+        elevation: 4,
+        alignItems: 'center',
     },
     title: {
         fontWeight: 'bold',
         fontSize: 16,
+        color: '#000000',
+    },
+    source: {
+        fontSize: 12,
+        color: '#888888',
+    },
+    description: {
+        fontSize: 14,
+        color: '#555555',
+        marginVertical: 8,
     },
     historyItem: {
-        padding: 16,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
+        padding: 12,
+        backgroundColor: '#F5F5F5',
+        borderRadius: 6,
         marginBottom: 8,
     },
     header: {
         fontWeight: 'bold',
-        fontSize: 18,
+        fontSize: 16,
         marginBottom: 8,
     },
 });
